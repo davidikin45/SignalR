@@ -114,7 +114,7 @@ public static class ChatHubServerExtensions
 }
 ```
 
-## Client Example
+## JavaScript Client Example
 ```
 var signalRNotificationsConnection = null;
 
@@ -141,4 +141,42 @@ function setupSignalRNotificationsConnection()
 };
 
 setupSignalRNotificationsConnection();
+```
+
+## Console Client Example
+- Microsoft.AspNetCore.SignalR.Client
+- Microsoft.AspNetCore.SignalR.Protocols.MessagePack
+
+```
+services.AddSignalR().AddMessagePackProtocol();
+endpoints.MapHub<ChatHub>("/chathub");
+```
+```
+class Program
+{
+	static async Task Main(string[] args)
+	{
+		Console.WriteLine("Press a key to start listening..");
+		Console.ReadKey();
+		var connection = new HubConnectionBuilder()
+			.WithUrl("https://localhost:44314/chathub")
+			.AddMessagePackProtocol()
+			.Build();
+
+		connection.Closed += e =>
+		{
+			Console.WriteLine("Connection closed with error: {0}", e);
+
+			return Task.CompletedTask;
+		};
+
+		connection.On<string>("ReceiveMessage", (message) =>
+			Console.WriteLine($"Message Received: {message}"));
+
+		await connection.StartAsync();
+
+		Console.WriteLine("Listening. Press a key to quit");
+		Console.ReadKey();
+	}
+}
 ```
